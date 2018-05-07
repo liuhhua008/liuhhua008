@@ -1,4 +1,4 @@
-package com.liu.springbootliu.com.liu.utils;
+package com.liu.springbootliu.utils;
 
 public class ResultMsg {
     private int errcode;

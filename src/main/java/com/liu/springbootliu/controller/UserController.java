@@ -1,9 +1,9 @@
-package com.liu.springbootliu.com.liu.controller;
+package com.liu.springbootliu.controller;
 
 import com.liu.springbootliu.bean.UserInfo;
 import com.liu.springbootliu.bean.UserInfoRepository;
-import com.liu.springbootliu.com.liu.utils.ResultMsg;
-import com.liu.springbootliu.com.liu.utils.ResultStatusCode;
+import com.liu.springbootliu.utils.ResultMsg;
+import com.liu.springbootliu.utils.ResultStatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.web.bind.annotation.RequestBody;

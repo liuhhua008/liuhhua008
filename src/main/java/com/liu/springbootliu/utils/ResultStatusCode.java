@@ -1,8 +1,9 @@
-package com.liu.springbootliu.com.liu.utils;
+package com.liu.springbootliu.utils;
 
 public enum ResultStatusCode {
     OK(0,"OK"),
-    SYSTEM_ERR(30001,"System error");
+    SYSTEM_ERR(30001,"System error"),
+    PERMISSION_DENIED(40001,"permission_denied");
     private int errcode;
     private String errmsg;
     public int getErrcode() {
