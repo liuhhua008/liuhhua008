@@ -1,6 +1,7 @@
 package com.liu.springbootliu;
 
 import com.liu.springbootliu.filter.HTTPBasicAuthorizeAttribute;
+import com.liu.springbootliu.jwt.Audience;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootApplication
+//@EnableConfigurationProperties(Audience.class)
 public class SpringBootLiuApplication {
 
     public static void main(String[] args) {

@@ -2,6 +2,7 @@ package com.liu.springbootliu.controller;
 
 import com.liu.springbootliu.bean.UserInfo;
 import com.liu.springbootliu.bean.UserInfoRepository;
+import com.liu.springbootliu.jwt.Audience;
 import com.liu.springbootliu.utils.ResultMsg;
 import com.liu.springbootliu.utils.ResultStatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,15 @@ import java.util.List;
 @RequestMapping("user")
 public class UserController {
     @Autowired
+    private Audience audience;
+    @Autowired
     private UserInfoRepository userRepositoy;
+
+    @RequestMapping("getaudience")
+    public Object getAudience() {
+        ResultMsg resultMsg=new ResultMsg(ResultStatusCode.OK.getErrcode(),ResultStatusCode.OK.getErrmsg(),audience);
+        return resultMsg;
+    }
 
    @RequestMapping("getuser")
     public Object getUser(int id){
