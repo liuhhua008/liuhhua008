@@ -57,6 +57,12 @@
             <artifactId> spring-boot-configuration-processor </artifactId>
             <optional> true </optional>
         </dependency>
+        <!-- jjwt token认证-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.7.0</version>
+        </dependency>
     </dependencies>
 
     <build>

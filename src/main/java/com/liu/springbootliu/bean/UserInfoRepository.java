@@ -11,4 +11,6 @@ public interface UserInfoRepository extends CrudRepository<UserInfo,Integer> {
 
     @Query(value="select * from t_user limit ?1",nativeQuery = true)
     List<UserInfo> findAllUserByCount(int count);
+
+    UserInfo findUserInfoByName(String userName);
 }
