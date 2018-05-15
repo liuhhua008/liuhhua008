@@ -9,6 +9,11 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+/**
+ * 验证HTTP的Authorization头部中是否包含了如下定义的Name Password字串，有就放行。没有就直接打加并返回PERMISSION_DENIED
+ * 信息。
+ */
 @SuppressWarnings("restriction")
 public class HTTPBasicAuthorizeAttribute implements Filter {
     private static String Name="test";
@@ -77,6 +82,11 @@ public class HTTPBasicAuthorizeAttribute implements Filter {
 
     }
 
+    /**
+     * 把字BASE64加密的字符串解析成正常的字串
+     * @param s
+     * @return
+     */
     private String getFromBASE64(String s) {
         if (s == null)
             return null;

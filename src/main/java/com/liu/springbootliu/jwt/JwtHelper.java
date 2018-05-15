@@ -26,14 +26,14 @@ public class JwtHelper {
 
     /**
      * 通过传入下列的字串值生成JWT token
-     * @param name
-     * @param userId
-     * @param role
-     * @param audience
-     * @param issuer
-     * @param TTLMillis
-     * @param base64Security
-     * @return
+     * @param name 用户名
+     * @param userId 用户ID
+     * @param role  用户权限
+     * @param audience token的受众标识
+     * @param issuer  tokenr的发行者
+     * @param TTLMillis  过期时长
+     * @param base64Security 加密码token的密钥
+     * @return  返回一个jwt token字符串
      */
     public static String createJWT(String name,String userId,String role,String audience,String issuer,long TTLMillis,String base64Security){
         //指定JWT头部加密类型

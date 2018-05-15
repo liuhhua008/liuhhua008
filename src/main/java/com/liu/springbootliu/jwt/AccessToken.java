@@ -4,9 +4,9 @@ package com.liu.springbootliu.jwt;
  * token返回结果类
  */
 public class AccessToken {
-    private String access_token;
-    private String token_type;
-    private long expires_in;
+    private String access_token;//jwt值
+    private String token_type;//token的类型
+    private long expires_in;//过期时长
 
     public String getAccess_token() {
         return access_token;
