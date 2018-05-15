@@ -5,6 +5,7 @@ import com.liu.springbootliu.jwt.Audience;
 import com.liu.springbootliu.jwt.JwtHelper;
 import com.liu.springbootliu.utils.ResultMsg;
 import com.liu.springbootliu.utils.ResultStatusCode;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
@@ -32,16 +33,31 @@ public class HTTPBearerAuthorizeAttribute implements Filter {
             if (HeadStr.compareTo("bearer")==0){
                 auth = auth.substring(7,auth.length());//拿到jwt字串
                 //对jwt字串进行解析得到Claims载体信息,这里并没有具体看里面到底有什么，只看能不能正常对验证签名拿到返回对象。
-                if (JwtHelper.parseJWT(auth,audienceEntity.getBase64Secret())!=null){
-                    filterChain.doFilter(servletRequest,servletResponse);
+                try{
+                    if (JwtHelper.parseJWT(auth,audienceEntity.getBase64Secret())!=null){
+                        filterChain.doFilter(servletRequest,servletResponse);
+                        return;
+                    }
+                }catch (ExpiredJwtException ex){
+                    //接住JWT的超时异常,返回Token超时信息
+                    HttpServletResponse httpResponse= (HttpServletResponse) servletResponse;
+                    httpResponse.setCharacterEncoding("UTF-8");
+                    httpResponse.setContentType("application/json;charset=utf-8");
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    httpResponse.setHeader("Authorization","expires");
+                    ObjectMapper mapper=new ObjectMapper();
+                    resultMsg = new ResultMsg(ResultStatusCode.EXPIRES_TOKEN.getErrcode(),ResultStatusCode.EXPIRES_TOKEN.getErrmsg(),null);
+                    httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
                     return;
                 }
+
             }
         }
-
+        //返回API验证错误消息
         HttpServletResponse httpResponse= (HttpServletResponse) servletResponse;
         httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setContentType("application/json;charset=utf-8");
+
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         ObjectMapper mapper=new ObjectMapper();
         resultMsg = new ResultMsg(ResultStatusCode.INVALID_TOKEN.getErrcode(),ResultStatusCode.INVALID_TOKEN.getErrmsg(),null);

@@ -1,9 +1,6 @@
 package com.liu.springbootliu.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -20,7 +17,13 @@ public class JwtHelper {
             Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(base64Security)).parseClaimsJws(jsonWebToken).getBody();
             return claims;
         }catch (Exception ex){
-            return null;
+            //ex.printStackTrace();如果判断异常类型为JWT超时异常，则抛出异常。
+            if(ex instanceof ExpiredJwtException){
+                throw (ExpiredJwtException)ex;
+            }else{
+                return null;
+            }
+
         }
     }
 
@@ -49,6 +52,7 @@ public class JwtHelper {
                                          .claim("role",role)
                                          .claim("unique_name",name)
                                          .claim("userid",userId)
+                                         .claim("usersn",""+Math.random())//搞个随机值
                                          .setIssuer(issuer)
                                          .setAudience(audience)
                                          .signWith(signatureAlgorithm,signingKey);//指定JWT尾部加密 头base64加密+载体base64加密 使用签名密钥进行用头部定义hs256加密

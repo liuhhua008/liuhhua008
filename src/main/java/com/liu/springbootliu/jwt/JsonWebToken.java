@@ -1,15 +1,20 @@
 package com.liu.springbootliu.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liu.springbootliu.bean.UserInfo;
 import com.liu.springbootliu.bean.UserInfoRepository;
 import com.liu.springbootliu.utils.MyUtils;
 import com.liu.springbootliu.utils.ResultMsg;
 import com.liu.springbootliu.utils.ResultStatusCode;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Random;
 
@@ -61,19 +66,9 @@ public class JsonWebToken {
                 }
 
             }
-            //拼装accessToken 传入
-            String accessToken = JwtHelper.createJWT(loginPara.getUserName(), String.valueOf(user.getId()),
-                    user.getRole(), audienceEntity.getClientId(), audienceEntity.getName(),
-                    audienceEntity.getExpiresSecond() * 1000, audienceEntity.getBase64Secret());
-
-            //返回accessToken
-            AccessToken accessTokenEntity = new AccessToken();
-            //设置jwt字符串到accessTokenEntity
-            accessTokenEntity.setAccess_token(accessToken);
-            //从audience配置中获取过期时长并赋值给accessTokenEntity
-            accessTokenEntity.setExpires_in(audienceEntity.getExpiresSecond());
-            //设置authorization的验证类型为"bearer"
-            accessTokenEntity.setToken_type("bearer");
+            //生成双token返回对象
+            AccessToken accessTokenEntity= getToken(loginPara.getUserName(), String.valueOf(user.getId()),
+                    user.getRole());
             resultMsg = new ResultMsg(ResultStatusCode.OK.getErrcode(),
                     ResultStatusCode.OK.getErrmsg(), accessTokenEntity);
             return resultMsg;
@@ -81,6 +76,36 @@ public class JsonWebToken {
             resultMsg = new ResultMsg(ResultStatusCode.SYSTEM_ERR.getErrcode(),ResultStatusCode.SYSTEM_ERR.getErrmsg(),null);
             return resultMsg;
         }
+    }
+
+    /**
+     * 生成包含双token的AccessToken对象
+     * @param userName
+     * @param userId
+     * @param userRole
+     * @return
+     */
+    private AccessToken getToken(String userName,String userId,String userRole) {
+        //拼装accessToken 传入
+        String accessToken = JwtHelper.createJWT(userName, userId,
+                userRole, audienceEntity.getClientId(), audienceEntity.getName(),
+                audienceEntity.getExpiresSecond() * 1000, audienceEntity.getBase64Secret());
+        //拼装refreshToken
+
+        String refreshToken=JwtHelper.createJWT(userName, userId,
+                userRole, audienceEntity.getClientId(), audienceEntity.getName(),
+                audienceEntity.getRefreshSecond() * 1000, audienceEntity.getBase64Secret());
+        //返回accessToken
+        AccessToken accessTokenEntity = new AccessToken();
+        //设置jwt字符串到accessTokenEntity
+        accessTokenEntity.setAccess_token(accessToken);
+        //设置jwt字符串到refreshTokenEntity
+        accessTokenEntity.setRefresh_token(refreshToken);
+        //从audience配置中获取过期时长并赋值给accessTokenEntity
+        accessTokenEntity.setExpires_in(audienceEntity.getExpiresSecond());
+        //设置authorization的验证类型为"bearer"
+        accessTokenEntity.setToken_type("bearer");
+        return accessTokenEntity;
     }
 
     /**
@@ -123,4 +148,46 @@ public class JsonWebToken {
         }
     }
 
+    /**
+     * jwt Token自动刷新，使用RefreshToken来获取新的jwt-Token，如果它也有问题或是过期了，
+     * 那就返回错误信息要求用户重新登录。
+     * @return
+     */
+    @RequestMapping("oauth/refreshToken")
+    public Object refreshAccessToken(@RequestHeader("Authorization") String authorization ,@RequestBody String clientId){
+
+            //判断CLIENTID是否错误
+            if (clientId==null || (clientId.compareTo(audienceEntity.getClientId())!=0)){
+                return "error clientId";
+            }
+            if (authorization!=null) {
+                String HeadStr = authorization.substring(0, 6).toLowerCase();
+                //之前在生成token entity 通过json http body返回给客户端的时候带了一个Token_type的属性值就是"bearer"
+                if (HeadStr.compareTo("bearer") == 0) {
+                    authorization = authorization.substring(7, authorization.length());//拿到jwt字串
+                    //对refresh-jwt字串进行解析得到Claims载体信息,这里并没有具体看里面到底有什么，只看能不能正常对验证签名拿到返回对象。
+                    try {
+                        if (JwtHelper.parseJWT(authorization, audienceEntity.getBase64Secret()) != null) {
+                           //证明refresh-jwt没有问题，生成新的accessToken返回给客户端
+                            Claims claims= JwtHelper.parseJWT(authorization, audienceEntity.getBase64Secret());
+                            //把原来refresh-jwt中包含的信息用来生成新的token
+                            getToken(claims.get("unique_name").toString(),claims.get("userid").toString(),claims.get("role").toString());
+                        }
+                    } catch (ExpiredJwtException ex) {
+//                        //接住JWT的超时异常,返回Token超时信息
+//                        HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+//                        httpResponse.setCharacterEncoding("UTF-8");
+//                        httpResponse.setContentType("application/json;charset=utf-8");
+//                        httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                        httpResponse.setHeader("Authorization", "expires");
+//                        ObjectMapper mapper = new ObjectMapper();
+//                        resultMsg = new ResultMsg(ResultStatusCode.EXPIRES_TOKEN.getErrcode(), ResultStatusCode.EXPIRES_TOKEN.getErrmsg(), null);
+//                        httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
+//                        return;
+                    }
+                }
+            }
+
+        return null;
+  }
 }
