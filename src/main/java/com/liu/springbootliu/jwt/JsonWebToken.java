@@ -154,7 +154,7 @@ public class JsonWebToken {
      * @return
      */
     @RequestMapping("oauth/refreshToken")
-    public Object refreshAccessToken(@RequestHeader("Authorization") String authorization ,@RequestBody String clientId){
+    public Object refreshAccessToken(@RequestHeader("Authorization") String authorization ,@RequestBody String clientId,HttpServletResponse httpResponse){
 
             //判断CLIENTID是否错误
             if (clientId==null || (clientId.compareTo(audienceEntity.getClientId())!=0)){
@@ -171,23 +171,31 @@ public class JsonWebToken {
                            //证明refresh-jwt没有问题，生成新的accessToken返回给客户端
                             Claims claims= JwtHelper.parseJWT(authorization, audienceEntity.getBase64Secret());
                             //把原来refresh-jwt中包含的信息用来生成新的token
-                            getToken(claims.get("unique_name").toString(),claims.get("userid").toString(),claims.get("role").toString());
+                            AccessToken accessToken=getToken(claims.get("unique_name").toString(),claims.get("userid").toString(),claims.get("role").toString());
+                            //封装结果消息返回给客户端
+                            return new ResultMsg(ResultStatusCode.OK.getErrcode(),
+                                    ResultStatusCode.OK.getErrmsg(), accessToken);
                         }
                     } catch (ExpiredJwtException ex) {
-//                        //接住JWT的超时异常,返回Token超时信息
-//                        HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-//                        httpResponse.setCharacterEncoding("UTF-8");
-//                        httpResponse.setContentType("application/json;charset=utf-8");
-//                        httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//                        httpResponse.setHeader("Authorization", "expires");
-//                        ObjectMapper mapper = new ObjectMapper();
-//                        resultMsg = new ResultMsg(ResultStatusCode.EXPIRES_TOKEN.getErrcode(), ResultStatusCode.EXPIRES_TOKEN.getErrmsg(), null);
-//                        httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
-//                        return;
+                        //如果refresh-jwt也过期，接住JWT的超时异常,返回Token超时信息
+                        //HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+                        httpResponse.setCharacterEncoding("UTF-8");
+                        httpResponse.setContentType("application/json;charset=utf-8");
+                        httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        httpResponse.setHeader("Authorization", "expires");
+                       // ObjectMapper mapper = new ObjectMapper();
+                        ResultMsg resultMsg = new ResultMsg(ResultStatusCode.EXPIRES_TOKEN.getErrcode(), ResultStatusCode.EXPIRES_TOKEN.getErrmsg(), null);
+                        try {
+                            //httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
+                            return resultMsg;
+                        }catch (Exception e){
+                            return new ResultMsg(ResultStatusCode.SYSTEM_ERR.getErrcode(),ResultStatusCode.SYSTEM_ERR.getErrmsg(),null);
+                        }
+
                     }
                 }
             }
 
-        return null;
+        return new ResultMsg(ResultStatusCode.SYSTEM_ERR.getErrcode(),ResultStatusCode.SYSTEM_ERR.getErrmsg(),null);
   }
 }
