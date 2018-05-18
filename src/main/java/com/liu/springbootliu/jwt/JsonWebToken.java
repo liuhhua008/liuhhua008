@@ -9,10 +9,7 @@ import com.liu.springbootliu.utils.ResultStatusCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
@@ -154,7 +151,7 @@ public class JsonWebToken {
      * @return
      */
     @RequestMapping("oauth/refreshToken")
-    public Object refreshAccessToken(@RequestHeader("Authorization") String authorization ,@RequestBody String clientId,HttpServletResponse httpResponse){
+    public Object refreshAccessToken(@RequestHeader("Authorization") String authorization , @RequestParam String clientId , HttpServletResponse httpResponse){
 
             //判断CLIENTID是否错误
             if (clientId==null || (clientId.compareTo(audienceEntity.getClientId())!=0)){
