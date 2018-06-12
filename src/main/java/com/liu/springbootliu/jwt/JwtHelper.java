@@ -52,7 +52,7 @@ public class JwtHelper {
                                          .claim("role",role)
                                          .claim("unique_name",name)
                                          .claim("userid",userId)
-                                         .claim("usersn",""+Math.random())//搞个随机值
+                                         .claim("usersn",""+Math.random())//搞个随机值,可以让每次生成的JWT都不一样，同时还可以做注销判断
                                          .setIssuer(issuer)
                                          .setAudience(audience)
                                          .signWith(signatureAlgorithm,signingKey);//指定JWT尾部加密 头base64加密+载体base64加密 使用签名密钥进行用头部定义hs256加密

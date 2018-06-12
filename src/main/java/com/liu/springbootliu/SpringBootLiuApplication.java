@@ -6,6 +6,7 @@ import com.liu.springbootliu.jwt.Audience;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @SpringBootApplication
+@EnableCaching
 //@EnableConfigurationProperties(Audience.class)
 public class SpringBootLiuApplication {
 
