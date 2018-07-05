@@ -1,8 +1,8 @@
 package com.liu.springbootliu.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liu.springbootliu.bean.UserInfo;
 import com.liu.springbootliu.bean.UserInfoRepository;
+import com.liu.springbootliu.redis.CacheUtils;
 import com.liu.springbootliu.utils.MyUtils;
 import com.liu.springbootliu.utils.ResultMsg;
 import com.liu.springbootliu.utils.ResultStatusCode;
@@ -33,7 +33,7 @@ public class JsonWebToken {
      *     String token_type;//token的类型
      *     long expires_in;//过期时长
      */
-    @RequestMapping("oauth/token")
+    @RequestMapping("oauth/login")
     public Object getAccessToken(@RequestBody LoginPara loginPara){
         ResultMsg resultMsg;
         try {
@@ -51,8 +51,7 @@ public class JsonWebToken {
                         ResultStatusCode.INVALID_PASSWORD.getErrmsg(), null);
                 return resultMsg;
             }
-            else
-            {
+            else {
                 String md5Password = MyUtils.getMD5(loginPara.getPassWord()+user.getSalt());
 
                 if (md5Password.compareTo(user.getPassword()) != 0)
@@ -64,12 +63,14 @@ public class JsonWebToken {
 
             }
             //生成双token返回对象
-            AccessToken accessTokenEntity= getToken(loginPara.getUserName(), String.valueOf(user.getId()),
+            AccessToken accessTokenEntity= getToken(loginPara.getUserName(), user.getUid(),
                     user.getRole());
+            System.out.println("已经生成了JWT");
             resultMsg = new ResultMsg(ResultStatusCode.OK.getErrcode(),
                     ResultStatusCode.OK.getErrmsg(), accessTokenEntity);
             return resultMsg;
         }catch (Exception ex){
+            ex.printStackTrace();
             resultMsg = new ResultMsg(ResultStatusCode.SYSTEM_ERR.getErrcode(),ResultStatusCode.SYSTEM_ERR.getErrmsg(),null);
             return resultMsg;
         }
@@ -83,17 +84,22 @@ public class JsonWebToken {
      * @return
      */
     private AccessToken getToken(String userName,String userId,String userRole) {
+        //拼装之前生成一个随机userCode值
+        String userCode=""+Math.random();
         //拼装accessToken 传入
         String accessToken = JwtHelper.createJWT(userName, userId,
                 userRole, audienceEntity.getClientId(), audienceEntity.getName(),
-                audienceEntity.getExpiresSecond() * 1000, audienceEntity.getBase64Secret());
+                audienceEntity.getExpiresSecond() * 1000, audienceEntity.getBase64Secret(),userCode);
         //拼装refreshToken
 
         String refreshToken=JwtHelper.createJWT(userName, userId,
                 userRole, audienceEntity.getClientId(), audienceEntity.getName(),
-                audienceEntity.getRefreshSecond() * 1000, audienceEntity.getBase64Secret());
+                audienceEntity.getRefreshSecond() * 1000, audienceEntity.getBase64Secret(),userCode);
+        //把userCode值存入redis内存库
+        CacheUtils.setCode(userId,userCode);
         //返回accessToken
         AccessToken accessTokenEntity = new AccessToken();
+        accessTokenEntity.setUser_id(userId);
         //设置jwt字符串到accessTokenEntity
         accessTokenEntity.setAccess_token(accessToken);
         //设置jwt字符串到refreshTokenEntity
@@ -134,6 +140,7 @@ public class JsonWebToken {
                 userInfo.setSalt(strSlat);
                 String md5Password = MyUtils.getMD5(userPara.getPassWord()+strSlat);
                 userInfo.setPassword(md5Password);
+                userInfo.setRole("user");
                 userRepositoy.save(userInfo);
                 return  new ResultMsg(ResultStatusCode.OK.getErrcode(),ResultStatusCode.OK.getErrmsg(),null);
             }else{
@@ -189,7 +196,10 @@ public class JsonWebToken {
                             return new ResultMsg(ResultStatusCode.SYSTEM_ERR.getErrcode(),ResultStatusCode.SYSTEM_ERR.getErrmsg(),null);
                         }
 
+                    }catch (JwtHelper.ErrorCodeException  ex){//捕获userCode不一至的异常
+                        return new ResultMsg(ResultStatusCode.USERCODE_ERR.getErrcode(),ResultStatusCode.USERCODE_ERR.getErrmsg(),null);
                     }
+
                 }
             }
 

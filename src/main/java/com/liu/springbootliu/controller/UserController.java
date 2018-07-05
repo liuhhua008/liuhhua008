@@ -28,8 +28,8 @@ public class UserController {
     }
 
    @RequestMapping("getuser")
-    public Object getUser(int id){
-       UserInfo userEntity = userRepositoy.findUserInfoById(id);
+    public Object getUser(String id){
+       UserInfo userEntity = userRepositoy.findUserInfoByUid(id);
        ResultMsg resultMsg = new ResultMsg(ResultStatusCode.OK.getErrcode(), ResultStatusCode.OK.getErrmsg(), userEntity);
        return resultMsg;
    }
@@ -54,7 +54,7 @@ public class UserController {
     @RequestMapping("updateuser")
     public Object updateUser(@RequestBody UserInfo userEntity)
     {
-        UserInfo user = userRepositoy.findUserInfoById(userEntity.getId());
+        UserInfo user = userRepositoy.findUserInfoByUid(userEntity.getUid());
         if (user != null)
         {
             user.setName(userEntity.getName());
@@ -72,5 +72,7 @@ public class UserController {
         ResultMsg resultMsg = new ResultMsg(ResultStatusCode.OK.getErrcode(), ResultStatusCode.OK.getErrmsg(), null);
         return resultMsg;
     }
+
+
 
 }

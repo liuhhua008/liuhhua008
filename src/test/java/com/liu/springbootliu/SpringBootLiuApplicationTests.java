@@ -24,6 +24,8 @@ public class SpringBootLiuApplicationTests {
     //直接使用redisTemplate存取字符串
     public void setAndGet() {
         redisTemplate.opsForValue().set("test:set", "testValue1");
+        String v= (String) redisTemplate.opsForValue().get("test:set");
+        boolean b="testValue1".equals(v);
         Assert.assertEquals("testValue1", redisTemplate.opsForValue().get("test:set"));
     }
 
@@ -43,5 +45,10 @@ public class SpringBootLiuApplicationTests {
         user = userService.getUser("Same");
         user = userService.getUser("Same");
 
+    }
+
+    @Test
+    public void test1(){
+        redisTemplate.opsForValue().set("userCode:"+4,"0.888888888");
     }
 }

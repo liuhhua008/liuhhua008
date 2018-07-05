@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * jwt的验证类
+ */
 public class HTTPBearerAuthorizeAttribute implements Filter {
     @Autowired
     private Audience audienceEntity;
@@ -47,6 +50,17 @@ public class HTTPBearerAuthorizeAttribute implements Filter {
                     httpResponse.setHeader("Authorization","expires");
                     ObjectMapper mapper=new ObjectMapper();
                     resultMsg = new ResultMsg(ResultStatusCode.EXPIRES_TOKEN.getErrcode(),ResultStatusCode.EXPIRES_TOKEN.getErrmsg(),null);
+                    httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
+                    return;
+                }catch (JwtHelper.ErrorCodeException  ex){//捕获userCode不一至的异常
+                    //接住userCode不一至的异常,返回信息
+                    HttpServletResponse httpResponse= (HttpServletResponse) servletResponse;
+                    httpResponse.setCharacterEncoding("UTF-8");
+                    httpResponse.setContentType("application/json;charset=utf-8");
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    httpResponse.setHeader("Authorization","userCodeError");
+                    ObjectMapper mapper=new ObjectMapper();
+                    resultMsg = new ResultMsg(ResultStatusCode.USERCODE_ERR.getErrcode(),ResultStatusCode.USERCODE_ERR.getErrmsg(),null);
                     httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
                     return;
                 }

@@ -8,7 +8,12 @@ public enum ResultStatusCode {
     INVALID_PASSWORD(50002,"invalid_password"),
     INVALID_TOKEN(60001,"invalid_token"),
     EXPIRES_TOKEN(60002,"expires_token"),
-    USERALREADY_REGISTERED(70001,"Already registered");
+    USERCODE_ERR(70002,"userCode is not compareCode"),
+    USERALREADY_REGISTERED(70001,"Already registered"),
+    UPFILE_SCUESS(80000,"上传成功!"),
+    UPFILE_ERR(80001,"upfile error"),
+    UPFILE_TYPEERR(80002,"上传的文件不是图片类型，请重新上传!"),
+    UPFILE_NOFILE(80003,"上传失败，请选择要上传的图片!");
 
     private int errcode;
     private String errmsg;

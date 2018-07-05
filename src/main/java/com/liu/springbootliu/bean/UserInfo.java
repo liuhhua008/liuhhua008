@@ -1,6 +1,7 @@
 package com.liu.springbootliu.bean;
 
 
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -8,24 +9,42 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name="t_user")
 public class UserInfo {
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.AUTO)
+//    private int id;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(length = 32)
+    private String uid;
     @NotNull
     private String name;
-
+    @NotNull
     private String password;
-
+    @NotNull
     private String salt;
 
     private String role;
 
-    public int getId() {
-        return id;
+    private String userHead;
+
+
+
+//    public int getId() {
+//        return id;
+//    }
+//
+//    public void setId(int id) {
+//        this.id = id;
+//    }
+
+
+    public String getUid() {
+        return uid;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getName() {
@@ -58,5 +77,13 @@ public class UserInfo {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getUserHead() {
+        return userHead;
+    }
+
+    public void setUserHead(String userHead) {
+        this.userHead = userHead;
     }
 }
